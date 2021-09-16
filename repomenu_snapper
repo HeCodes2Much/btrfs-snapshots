@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+# path:       /usr/bin/repomenue_snapper
+# author:     The-Repo-Club [wayne6324@gmail.com]
+# github:     https://github.com/The-Repo-Club/repomenu-snapshots
+# date:       2021-09-16 16:34:47.440579
+
+getsettings() {
+    TERMINAL=$(gsettings get org.therepoclub.repomenu.preferences terminal | sed s/\'//g)
+}
+
+asksetting() {
+    commands=
+    if command -v snaplist &> /dev/null; then
+        commands+=":g Snaplist\n"
+    fi
+
+    if command -v snaphome &> /dev/null; then
+        commands+=":p Snaphome\n"
+    fi
+
+    if command -v snaproot &> /dev/null; then
+        commands+=":r Snaproot\n"
+    fi
+
+    if command -v snapmake &> /dev/null; then
+        commands+=":r שׂSnapmake\n"
+    fi
+    echo -e "$commands" | sed '/^$/d' | repomenu -c -l 10 -w -300 -i -h -1 -bw 4 -q "${1:-Select snap package...}"
+}
+
+LOOPSETTING="true"
+while [ -n "$LOOPSETTING" ]; do
+    CHOICE="$(asksetting)"
+    [ -n "$CHOICE" ] || exit
+    unset LOOPSETTING
+    getsettings
+    snap=$(echo $CHOICE | awk -F"Snap" '{print $2}')
+    case "$CHOICE" in
+        *list)
+            $TERMINAL --title snapper --class snapper,Snapper -e sudo snap$snap
+            ;;
+        *home)
+            $TERMINAL --title snapper --class snapper,Snapper -e sudo snap$snap
+            ;;
+        *root)
+            $TERMINAL --title snapper --class snapper,Snapper -e sudo snap$snap
+            ;;
+        *make)
+            $TERMINAL --title snapper --class snapper,Snapper -e sudo snap$snap
+            ;;
+        *)
+            echo "Program terminated."
+            exit 1
+            ;;
+    esac
+done

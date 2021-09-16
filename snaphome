@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -e
+#number of snapshots allowed
+sn=10
+
+cmd=$(basename $0)
+
+## Set Colors (copied from makepkg)
+ALL_OFF="\e[1;0m"
+RED="\e[1;31m"
+GREEN="\e[1;32m"
+YELLOW="\e[1;33m"
+BLUE="\e[1;34m"
+PURPLE="\e[1:35m"
+CYAN="\e[1:36m"
+
+readonly ALL_OFF RED GREEN YELLOW BLUE PURPLE CYAN
+
+runas=$(whoami)
+
+if [ $runas != 'root' ]; then
+    printf ${GREEN}"%s ${RED}command must be ran as root\n" "$cmd"
+    exit
+fi
+
+#home subvolume device
+hsvdv="$(df -Th | awk '/btrfs/ && /home/' | cut -d' ' -f 1)"
+
+#current date
+cdt=`date +"%F-%H-%M-%S"`
+
+#home subvolume
+hsv="$(btrfs subvolume list / | awk '/level 5/ && /@home$/ {print $NF}')"
+
+#snapshot subvolume
+ssv="$(btrfs subvolume list / | awk '/level 5/ && /snapshot/ {print $NF}')"
+
+#number of home snapshots
+hsl="$(btrfs subvolume list / | awk '/snapshot/ && /@home/' | wc -l)"
+
+#oldest home snapshot
+ohs="$(btrfs subvolume list / | awk '/snapshot/ && /@home/ {print $NF}' | head -n1)"
+
+#Mount home subvolume to /mnt/750GB/.snapshots
+mnt='/mnt/750GB/.snapshots'
+
+if [ -e "$hsvdv" ]; then
+    printf "${yellow} mounted $hsvdv to $mnt${nc}\n"
+else
+    printf "${red} no btrfs drives found${nc}\n"
+    exit 1
+fi
+
+#MUST be in /mnt to perform task
+cd $mnt
+
+
+# Check home subvolume exists...
+if [ -e "$hsv" ]; then
+    printf "${GREEN}Found home subvolume...${ALL_OFF}\n"
+else
+    printf "${RED}No home subvolume found... exiting${ALL_OFF}\n"
+    exit 1
+fi
+
+# check snapshot subvolume exists...
+if [ -e "$ssv" ]; then
+    printf "${GREEN}Found snapshot suvolume...${ALL_OFF}\n"
+else
+    printf "${RED}No snapshot subvolume found${ALL_OFF}\n"
+
+    exit 1
+fi
+
+#Make snapshot and place in snapshot directory
+btrfs subvolume snapshot $hsv $ssv/@home-$cdt
+
+#remove a home snapshot if there are more than 5
+if [ "$hsl" -ge "$sn" ]; then
+    printf "${RED}Removing oldest snapshot... ${ALL_OFF}\n"
+    btrfs subvolume delete $ohs
+else
+    printf "${YELLOW}Not enough snapshots...${ALL_OFF}\n"
+    printf "${YELLOW}No snapshots to delete...${ALL_OFF}\n"
+fi
+
+read

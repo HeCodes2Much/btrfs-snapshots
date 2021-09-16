@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+cmd=$(basename $0)
+
+## Set Colors (copied from makepkg)
+ALL_OFF="\e[1;0m"
+RED="\e[1;31m"
+GREEN="\e[1;32m"
+YELLOW="\e[1;33m"
+BLUE="\e[1;34m"
+PURPLE="\e[1:35m"
+CYAN="\e[1:36m"
+
+readonly ALL_OFF RED GREEN YELLOW BLUE PURPLE CYAN
+
+runas=$(whoami)
+
+if [ $runas != 'root' ]; then
+    printf ${GREEN}"%s ${RED}command must be ran as root\n" "$cmd"
+    exit
+fi
+
+#number of root snapshots
+rsl="$(btrfs subvolume list / | awk '/snap/ && /@root/' | wc -l)"
+
+#number of home snapshots
+hsl="$(btrfs subvolume list / | awk '/snap/ && /@home/' | wc -l)"
+
+printf ${GREEN}"list of root snapshots:${YELLOW} $rsl ${ALL_OFF}\n"
+
+#list of root snapshots by name
+btrfs subvolume list / | awk '/snap/ && /@root/ {print $1"="$2" "$9}'
+
+printf "\n"
+
+printf ${GREEN}"list of home snapshots:${YELLOW} $hsl ${ALL_OFF}\n"
+
+#list of home snapshots by name
+btrfs subvolume list / | awk '/snap/ && /@home/ {print $1"="$2" "$9}'
+
+read
