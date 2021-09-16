@@ -1,0 +1,10 @@
+[Unit]
+Description=Make a snapshot on boot
+
+[Service]
+Type=oneshot
+Environment=DISPLAY=:0
+ExecStart=/usr/local/bin/snapmake
+
+[Install]
+WantedBy=auto-snapshot.timer

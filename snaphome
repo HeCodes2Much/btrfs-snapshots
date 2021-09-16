@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 #number of snapshots allowed
-sn=10
+sn=15
 
 cmd=$(basename $0)
 
