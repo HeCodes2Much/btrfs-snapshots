@@ -13,28 +13,36 @@ CYAN="\e[1:36m"
 readonly ALL_OFF RED GREEN YELLOW BLUE PURPLE CYAN
 
 runas=$(whoami)
-echo $cmd
 
 if [ $runas != 'root' ]; then
-    printf ${GREEN}"%s ${RED}command must be ran as root\n" "$cmd"
+    printf ${GREEN}"%s ${RED}command must be ran as root${ALL_OFF}\n" "$cmd"
     exit
 fi
 
 
 if ! command -v snaphome &> /dev/null; then
-    printf ${RED}"snaphome could not be found\n"
+    printf ${RED}"snaphome could not be found${ALL_OFF}\n"
     exit
 else
-    # snaphome
-    printf ${GREEN}"running snaphome.\n"
+    printf ${GREEN}"running snaphome.${ALL_OFF}\n"
+    snaphome
 fi
 
 if ! command -v snaproot &> /dev/null; then
-    printf ${RED}"snaproot could not be found\n"
+    printf ${RED}"snaproot could not be found${ALL_OFF}\n"
     exit
 else
-    # snaproot
-    printf ${GREEN}"running snaproot.\n"
+    printf ${GREEN}"running snaproot.${ALL_OFF}\n"
+    snaproot
 fi
 
-read
+if ! command -v grub-mkconfig &> /dev/null; then
+    printf ${RED}"grub-mkconfig could not be found${ALL_OFF}\n"
+    exit
+else
+    printf ${GREEN}"running grub-mkconfig.${ALL_OFF}\n"
+    grub-mkconfig -o /boot/grub/grub.cfg
+fi
+
+printf "\n"
+read -rsn1 -p"Press any key to continue";echo

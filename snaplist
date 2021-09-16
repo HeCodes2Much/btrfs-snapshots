@@ -37,4 +37,5 @@ printf ${GREEN}"list of home snapshots:${YELLOW} $hsl ${ALL_OFF}\n"
 #list of home snapshots by name
 btrfs subvolume list / | awk '/snap/ && /@home/ {print $1"="$2" "$9}'
 
-read
+printf "\n"
+read -rsn1 -p"Press any key to continue";echo

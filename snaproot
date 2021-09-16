@@ -39,7 +39,7 @@ ssv="$(btrfs subvolume list / | awk '/level 5/ && /snapshot/ {print $NF}')"
 hsl="$(btrfs subvolume list / | awk '/snapshot/ && /@root/' | wc -l)"
 
 #oldest home snapshot
-ohs="$(btrfs subvolume list / | awk '/snapshot/ && /@/ {print $NF}' | head -n1)"
+ohs="$(btrfs subvolume list / | awk '/snapshot/ && /@root/ {print $NF}' | head -n1)"
 
 #Mount home subvolume to /mnt/750GB/.snapshots
 mnt='/mnt/750GB/.snapshots'
@@ -76,11 +76,12 @@ btrfs subvolume snapshot $hsv $ssv/@root-$cdt
 
 #remove a home snapshot if there are more than 5
 if [ "$hsl" -ge "$sn" ]; then
-    printf "${RED}Removing oldest snapshot... ${ALL_OFF}\n"
+    printf "${RED}Removing oldest $hsv snapshot... ${ALL_OFF}\n"
     btrfs subvolume delete $ohs
 else
-    printf "${YELLOW}Not enough snapshots...${ALL_OFF}\n"
+    printf "${YELLOW}Not enough $hsv snapshots...${ALL_OFF}\n"
     printf "${YELLOW}No snapshots to delete...${ALL_OFF}\n"
 fi
 
-read
+printf "\n"
+read -rsn1 -p"Press any key to continue";echo
