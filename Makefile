@@ -10,11 +10,14 @@ install: all
 	cp -f snap* $(DESTDIR)$(LOCALPREFIX)/bin
 	mkdir -p $(DESTDIR)$(SYSTEMD)/system
 	cp -f auto-snapshot* $(DESTDIR)$(SYSTEMD)/system
+	mkdir -p $(DESTDIR)$(PACMAND)/hooks
+	cp -f *make_snapshot* $(DESTDIR)$(PACMAND)/hooks
 
 
 uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/bin/repomenu_snapper
 	rm -rf $(DESTDIR)$(LOCALPREFIX)/bin/snap*
 	rm -rf $(DESTDIR)$(SYSTEMD)/system/auto-snapshot*
+	rm -rf $(DESTDIR)$(PACMAND)/hooks/*make_snapshot*
 
 .PHONY: all install uninstall
