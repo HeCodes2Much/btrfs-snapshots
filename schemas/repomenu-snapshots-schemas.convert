@@ -1,0 +1,5 @@
+# From org.therepoclub.repomenu.snapshots.preferences
+[org.therepoclub.repomenu.snapshots.preferences]
+pacman = 10
+root = 10
+home = 10

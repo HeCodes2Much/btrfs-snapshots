@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-cmd=$(basename $0)
+## Script metadata
+SCRIPTNAME=${0##*/}
+VERSION="2021.09.19"
+DESCRIPTION="A bach BTRFS Sanpshot wrapper"
+AUTHOR="The-Repo-Club <wayne6324@gmail.com>"
 
 ## Set Colors (copied from makepkg)
 ALL_OFF="\e[1;0m"
@@ -12,30 +16,130 @@ CYAN="\e[1:36m"
 
 readonly ALL_OFF RED GREEN YELLOW BLUE PURPLE CYAN
 
-runas=$(whoami)
+main(){
+    runas=$(whoami)
 
-if [ $runas != 'root' ]; then
-    printf ${GREEN}"%s ${RED}command must be ran as root\n" "$cmd"
+    if [ $runas != 'root' ]; then
+        printf ${GREEN}"%s ${RED}command must be ran as root\n" "$SCRIPTNAME"
+        exit
+    fi
+
+    IndexOf() {
+        x="${1%%$2*}"
+        [ "$x" = "$1" ] || printf '%d' "${#x}"
+    }
+
+    declare -A PathCounts
+    declare -A Paths
+    NL='\n'
+
+    while IFS= read -r Line; do
+
+        set -- $Line
+
+        # Path is after the first "path "
+        Path=$9
+
+        # Get the index of the first /
+        PathL2Index=$( IndexOf "$Path" '/' )
+
+        # Ignore paths that don't have a 2nd level
+        [ -z "$PathL2Index" ] && continue
+
+        Id=$2
+
+        # Path is after the first / in Path
+        PathL2=${Path:$(( PathL2Index + 1 ))}
+
+        # Remove the 10 char date from the end to isolate the name
+        NameL2=${PathL2%????????????????????}
+
+        # Remove the 1st character "@"
+        NameL2=${NameL2:1}
+
+        # If -pacman exists in the NameL2, it's category is pacman
+        if [ "${NameL2##*-pacman}" = "$1" ]; then
+            Category='pacman'
+        else
+            Category=$NameL2
+        fi
+
+        # Add NameL2 to appropriate category
+        Paths["$Category"]="${Paths["$Category"]}ID=$Id $Path$NL"
+
+        # Increment count in appropriate category
+        (( PathCounts["$Category"]++ ))
+
+    done <<< $(btrfs subvolume list /)
+
+    FirstRun=1
+    for Key in "${!Paths[@]}"; do
+        [ -n "$FirstRun" ] || printf '\n'
+        printf "${GREEN}list of %s snapshots: ${YELLOW}%s${ALL_OFF}\n" "$Key" "${PathCounts[$Key]}"
+        printf "${Paths[$Key]}";
+        FirstRun=
+    done
+
+    printf "\n"
+    read -rsn1 -p "Press any key to continue";printf "\n"
+}
+
+#=== FUNCTION =================================================================
+#        Name: version
+# Description: Prints version information
+#==============================================================================
+
+version() {
+    printf "
+    %s v%s - %s
+
+    This program may be freely redistributed under
+    the terms of the GNU General Public License v3.0.
+    %s
+    \n" "$SCRIPTNAME" "$VERSION" "$DESCRIPTION" "$AUTHOR"
     exit
-fi
+}
 
-#number of root snapshots
-rsl="$(btrfs subvolume list / | awk '/snap/ && /@root/' | wc -l)"
+#=== FUNCTION =================================================================
+#        Name: usage
+# Description: Prints the usage
+#==============================================================================
 
-#number of home snapshots
-hsl="$(btrfs subvolume list / | awk '/snap/ && /@home/' | wc -l)"
+usage() {
 
-printf ${GREEN}"list of root snapshots:${YELLOW} $rsl ${ALL_OFF}\n"
+    printf "
+    Snapshot the @ and @home btrfs subvolumes.
+    Usage:
+    %s...
+    %s [options]...
+    Options:
+    -h, --help            Display help.
+    -v, --version         Print version information and exits.
+    \n" "$SCRIPTNAME" "$SCRIPTNAME"
+}
 
-#list of root snapshots by name
-btrfs subvolume list / | awk '/snap/ && /@root/ {print $1"="$2" "$9}'
-
-printf "\n"
-
-printf ${GREEN}"list of home snapshots:${YELLOW} $hsl ${ALL_OFF}\n"
-
-#list of home snapshots by name
-btrfs subvolume list / | awk '/snap/ && /@home/ {print $1"="$2" "$9}'
-
-printf "\n"
-read -rsn1 -p"Press any key to continue";echo
+while true; do
+    case $1 in
+        -h|--help|-\?)
+            usage
+            exit 0
+            ;;
+        -v|--version)
+            version
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            error "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+        *)
+            main
+            break
+            ;;
+    esac
+done
