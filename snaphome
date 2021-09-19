@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+SNAP_HOME=$(gsettings get org.therepoclub.repomenu.snapshots.preferences home | sed s/\'//g)
+SNAP_PACMAN=$(gsettings get org.therepoclub.repomenu.snapshots.preferences pacman | sed s/\'//g)
+
 ## Script metadata
 SCRIPTNAME=${0##*/}
 VERSION="2021.09.19"
@@ -37,7 +40,7 @@ error() {
 
 main() {
     #number of snapshots allowed
-    sn=15
+    sn=$SNAP_HOME
 
     runas=$(whoami)
 
@@ -68,9 +71,14 @@ main() {
     mnt='/mnt/750GB/.snapshots'
 
     if [ -e "$hsvdv" ]; then
-        printf "${yellow} mounted $hsvdv to $mnt${nc}\n"
+        if [ -d "$mnt" ]; then
+            printf "${YELLOW}Mounted $hsvdv to $mnt${ALL_OFF}\n"
+        else
+            printf "${RED}No btrfs drives found${ALL_OFF}\n"
+            exit 1
+        fi
     else
-        printf "${red} no btrfs drives found${nc}\n"
+        printf "${RED}No btrfs drives found${ALL_OFF}\n"
         exit 1
     fi
 
@@ -108,7 +116,7 @@ main() {
     fi
 
     printf "\n"
-    read -rsn1 -p"Press any key to continue";echo
+    read -rsn1 -p "Press any key to continue";printf "\n"
 }
 
 #=== FUNCTION =================================================================
@@ -118,7 +126,7 @@ main() {
 
 pacman() {
     #number of snapshots allowed
-    sn=5
+    sn=$SNAP_PACMAN
 
     runas=$(whoami)
 
@@ -149,9 +157,14 @@ pacman() {
     mnt='/mnt/750GB/.snapshots'
 
     if [ -e "$hsvdv" ]; then
-        printf "${yellow} mounted $hsvdv to $mnt${nc}\n"
+        if [ -d "$mnt" ]; then
+            printf "${YELLOW}Mounted $hsvdv to $mnt${ALL_OFF}\n"
+        else
+            printf "${RED}No btrfs drives found${ALL_OFF}\n"
+            exit 1
+        fi
     else
-        printf "${red} no btrfs drives found${nc}\n"
+        printf "${RED}No btrfs drives found${ALL_OFF}\n"
         exit 1
     fi
 
@@ -189,7 +202,7 @@ pacman() {
     fi
 
     printf "\n"
-    read -rsn1 -p"Press any key to continue";echo
+    read -rsn1 -p "Press any key to continue";printf "\n"
 }
 
 #=== FUNCTION =================================================================

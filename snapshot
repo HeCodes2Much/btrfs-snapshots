@@ -67,7 +67,7 @@ main() {
     fi
 
     printf "\n"
-    read -rsn1 -p"Press any key to continue";echo
+    read -rsn1 -p "Press any key to continue";printf "\n"
 }
 
 #=== FUNCTION =================================================================
@@ -101,7 +101,7 @@ home_only() {
     fi
 
     printf "\n"
-    read -rsn1 -p"Press any key to continue";echo
+    read -rsn1 -p "Press any key to continue";printf "\n"
 }
 
 #=== FUNCTION =================================================================
@@ -135,7 +135,7 @@ root_only() {
     fi
 
     printf "\n"
-    read -rsn1 -p"Press any key to continue";echo
+    read -rsn1 -p "Press any key to continue";printf "\n"
 }
 
 #=== FUNCTION =================================================================
@@ -177,7 +177,7 @@ pacman() {
     fi
 
     printf "\n"
-    read -rsn1 -p"Press any key to continue";echo
+    read -rsn1 -p "Press any key to continue";printf "\n"
 }
 
 #=== FUNCTION =================================================================

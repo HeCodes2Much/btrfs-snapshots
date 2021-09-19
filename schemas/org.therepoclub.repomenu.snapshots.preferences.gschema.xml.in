@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema path="/org/therepoclub/repomenu/snapshots/preferences/" id="org.therepoclub.repomenu.snapshots.preferences">
+    <key type="s" name="pacman">
+      <default>'5'</default>
+      <summary>Number of pacman snapshots to save</summary>
+      <description>This is the number of pacman snapshots to save.</description>
+    </key>
+    <key type="s" name="root">
+      <default>'15'</default>
+      <summary>Number of root snapshots to save</summary>
+      <description>This is the number of root snapshots to save.</description>
+    </key>
+    <key type="s" name="home">
+      <default>'15'</default>
+      <summary>Number of home snapshots to save</summary>
+      <description>This is the number of home snapshots to save.</description>
+    </key>
+  </schema>
+</schemalist>
