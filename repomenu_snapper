@@ -23,8 +23,8 @@ asksetting() {
         commands+=":r Snaproot\n"
     fi
 
-    if command -v snapmake &> /dev/null; then
-        commands+=":r שׂSnapmake\n"
+    if command -v snapshot &> /dev/null; then
+        commands+=":r שׂSnapshot\n"
     fi
     echo -e "$commands" | sed '/^$/d' | repomenu -c -l 10 -w -300 -i -h -1 -bw 4 -q "${1:-Select snap package...}"
 }
@@ -46,7 +46,7 @@ while [ -n "$LOOPSETTING" ]; do
         *root)
             $TERMINAL --title snapper --class snapper,Snapper -e sudo snap$snap
             ;;
-        *make)
+        *shot)
             $TERMINAL --title snapper --class snapper,Snapper -e sudo snap$snap
             ;;
         *)
