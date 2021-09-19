@@ -45,29 +45,49 @@ main() {
     runas=$(whoami)
 
     if [ $runas != 'root' ]; then
-        printf ${GREEN}"%s ${RED}command must be ran as root\n" "$cmd"
+        printf ${GREEN}"%s ${RED}command must be ran as root\n" "$SCRIPTNAME"
         exit
     fi
 
-    #home subvolume device
-    hsvdv="$(df -Th | awk '/btrfs/ && /home/' | cut -d' ' -f 1)"
+    #root subvolume device
+    hsvdvl=1
+    while IFS= read -r Line; do
+	    if [ -n "$hsvdvl" ]; then
+		    unset hsvdvl; continue
+	    fi
+	    set -- $Line
+	    [ "$2" = 'btrfs' ] && [ "${7}" = '/' ] && hsvdv="$1"
+    done <<< $( df -Th )
 
     #current date
     cdt=`date +"%F-%H-%M-%S"`
 
     #root subvolume
-    hsv="$(btrfs subvolume list / | awk '/level 5/ && /@$/ {print $NF}')"
+    while IFS= read -r Line; do
+	    set -- $Line
+	    [ "$7" = '5' ] && [ "$9" = '@' ] && hsv="${@: -1}"
+    done <<< $( btrfs subvolume list / )
 
     #snapshot subvolume
-    ssv="$(btrfs subvolume list / | awk '/level 5/ && /snapshot/ {print $NF}')"
+    while IFS= read -r Line; do
+	    set -- $Line
+	    [ "$7" = '5' ] && [ "$9" = '@snapshots' ] && ssv="${@: -1}"
+    done <<< $( btrfs subvolume list / )
 
-    #number of home snapshots
-    hsl="$(btrfs subvolume list / | awk '/snapshot/ && /@root/' | wc -l)"
+    #number of root snapshots
+    hsl=0
+    while IFS= read -r Line; do
+	    LastColumn=${Line##* }
+	    [ "${LastColumn:0:16}" = '@snapshots/@root' ] && [ "${LastColumn:16:7}" != '-pacman' ] && hsl=$((hsl+1))
+    done <<< $( btrfs subvolume list / )
 
-    #oldest home snapshot
-    ohs="$(btrfs subvolume list / | awk '/snapshot/ && /@root/ {print $NF}' | head -n1)"
+    #oldest root snapshot
+    while IFS= read -r Line; do
+	    LastColumn=${Line##* }
+	    [ "${LastColumn:0:16}" = '@snapshots/@root' ] && [ "${LastColumn:16:7}" != '-pacman' ] && ohs="$LastColumn" && break
+    done <<< $( btrfs subvolume list / )
 
-    #Mount home subvolume to /mnt/750GB/.snapshots
+    #Mount root subvolume to /mnt/750GB/.snapshots
     mnt='/mnt/750GB/.snapshots'
 
     if [ -e "$hsvdv" ]; then
@@ -85,10 +105,9 @@ main() {
     #MUST be in /mnt to perform task
     cd $mnt
 
-
-    # Check home subvolume exists...
+    # Check root subvolume exists...
     if [ -e "$hsv" ]; then
-        printf "${GREEN}Found root subvolume...${ALL_OFF}\n"
+        printf "${GREEN}Found root subvolume... $hsv${ALL_OFF}\n"
     else
         printf "${RED}No root subvolume found... exiting${ALL_OFF}\n"
         exit 1
@@ -96,18 +115,19 @@ main() {
 
     # check snapshot subvolume exists...
     if [ -e "$ssv" ]; then
-        printf "${GREEN}Found snapshot suvolume...${ALL_OFF}\n"
+        printf "${GREEN}Found snapshot suvolume... $ssv${ALL_OFF}\n"
     else
         printf "${RED}No snapshot subvolume found${ALL_OFF}\n"
+
         exit 1
     fi
 
     #Make snapshot and place in snapshot directory
     btrfs subvolume snapshot $hsv $ssv/@root-$cdt
 
-    #remove a home snapshot if there are more than 5
+    #remove a root snapshot if there are more than 5
     if [ "$hsl" -ge "$sn" ]; then
-        printf "${RED}Removing oldest $hsv snapshot... ${ALL_OFF}\n"
+        printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
         btrfs subvolume delete $ohs
     else
         printf "${YELLOW}Not enough $hsv snapshots...${ALL_OFF}\n"
@@ -130,29 +150,49 @@ pacman() {
     runas=$(whoami)
 
     if [ $runas != 'root' ]; then
-        printf ${GREEN}"%s ${RED}command must be ran as root\n" "$cmd"
+        printf ${GREEN}"%s ${RED}command must be ran as root\n" "$SCRIPTNAME"
         exit
     fi
 
-    #home subvolume device
-    hsvdv="$(df -Th | awk '/btrfs/ && /home/' | cut -d' ' -f 1)"
+    #root subvolume device
+    hsvdvl=1
+    while IFS= read -r Line; do
+	    if [ -n "$hsvdvl" ]; then
+		    unset hsvdvl; continue
+	    fi
+	    set -- $Line
+	    [ "$2" = 'btrfs' ] && [ "${7}" = '/' ] && hsvdv="$1"
+    done <<< $( df -Th )
 
     #current date
     cdt=`date +"%F-%H-%M-%S"`
 
     #root subvolume
-    hsv="$(btrfs subvolume list / | awk '/level 5/ && /@$/ {print $NF}')"
+    while IFS= read -r Line; do
+	    set -- $Line
+	    [ "$7" = '5' ] && [ "$9" = '@' ] && hsv="${@: -1}"
+    done <<< $( btrfs subvolume list / )
 
     #snapshot subvolume
-    ssv="$(btrfs subvolume list / | awk '/level 5/ && /snapshot/ {print $NF}')"
+    while IFS= read -r Line; do
+	    set -- $Line
+	    [ "$7" = '5' ] && [ "$9" = '@snapshots' ] && ssv="${@: -1}"
+    done <<< $( btrfs subvolume list / )
 
-    #number of home snapshots
-    hsl="$(btrfs subvolume list / | awk '/snapshot/ && /@root/ && /pacman/' | wc -l)"
+    #number of root snapshots
+    hsl=0
+    while IFS= read -r Line; do
+	    LastColumn=${Line##* }
+	    [ "${LastColumn:0:23}" = '@snapshots/@root-pacman' ] && hsl=$((hsl+1))
+    done <<< $( btrfs subvolume list / )
 
-    #oldest home snapshot
-    ohs="$(btrfs subvolume list / | awk '/snapshot/ && /@root/ && /pacman/ {print $NF}' | head -n1)"
+    #oldest root snapshot
+    while IFS= read -r Line; do
+	    LastColumn=${Line##* }
+	    [ "${LastColumn:0:23}" = '@snapshots/@root-pacman' ] && ohs="$LastColumn" && break
+    done <<< $( btrfs subvolume list / )
 
-    #Mount home subvolume to /mnt/750GB/.snapshots
+    #Mount root subvolume to /mnt/750GB/.snapshots
     mnt='/mnt/750GB/.snapshots'
 
     if [ -e "$hsvdv" ]; then
@@ -171,9 +211,9 @@ pacman() {
     cd $mnt
 
 
-    # Check home subvolume exists...
+    # Check root subvolume exists...
     if [ -e "$hsv" ]; then
-        printf "${GREEN}Found root subvolume...${ALL_OFF}\n"
+        printf "${GREEN}Found root subvolume... $hsv${ALL_OFF}\n"
     else
         printf "${RED}No root subvolume found... exiting${ALL_OFF}\n"
         exit 1
@@ -181,18 +221,19 @@ pacman() {
 
     # check snapshot subvolume exists...
     if [ -e "$ssv" ]; then
-        printf "${GREEN}Found snapshot suvolume...${ALL_OFF}\n"
+        printf "${GREEN}Found snapshot suvolume... $ssv${ALL_OFF}\n"
     else
         printf "${RED}No snapshot subvolume found${ALL_OFF}\n"
+
         exit 1
     fi
 
     #Make snapshot and place in snapshot directory
     btrfs subvolume snapshot $hsv $ssv/@root-pacman-$cdt
 
-    #remove a home snapshot if there are more than 5
+    #remove a root snapshot if there are more than 5
     if [ "$hsl" -ge "$sn" ]; then
-        printf "${RED}Removing oldest $hsv snapshot... ${ALL_OFF}\n"
+        printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
         btrfs subvolume delete $ohs
     else
         printf "${YELLOW}Not enough $hsv snapshots...${ALL_OFF}\n"
@@ -227,7 +268,7 @@ version() {
 usage() {
 
     printf "
-    Snapshot the @ and @home btrfs subvolumes.
+    Snapshot the @ and @root btrfs subvolumes.
     Usage:
       %s...
       %s [options]...

@@ -50,22 +50,42 @@ main() {
     fi
 
     #home subvolume device
-    hsvdv="$(df -Th | awk '/btrfs/ && /home/' | cut -d' ' -f 1)"
+    hsvdvl=1
+    while IFS= read -r Line; do
+	    if [ -n "$hsvdvl" ]; then
+		    unset hsvdvl; continue
+	    fi
+	    set -- $Line
+	    [ "$2" = 'btrfs' ] && [ "${7}" = '/home' ] && hsvdv="$1"
+    done <<< $( df -Th )
 
     #current date
     cdt=`date +"%F-%H-%M-%S"`
 
     #home subvolume
-    hsv="$(btrfs subvolume list / | awk '/level 5/ && /@home$/ {print $NF}')"
+    while IFS= read -r Line; do
+	    set -- $Line
+	    [ "$7" = '5' ] && [ "$9" = '@home' ] && hsv="${@: -1}"
+    done <<< $( btrfs subvolume list / )
 
     #snapshot subvolume
-    ssv="$(btrfs subvolume list / | awk '/level 5/ && /snapshot/ {print $NF}')"
+    while IFS= read -r Line; do
+	    set -- $Line
+	    [ "$7" = '5' ] && [ "$9" = '@snapshots' ] && ssv="${@: -1}"
+    done <<< $( btrfs subvolume list / )
 
     #number of home snapshots
-    hsl="$(btrfs subvolume list / | awk '/snapshot/ && /@home/' | wc -l)"
+    hsl=0
+    while IFS= read -r Line; do
+	    LastColumn=${Line##* }
+	    [ "${LastColumn:0:16}" = '@snapshots/@home' ] && [ "${LastColumn:16:7}" != '-pacman' ] && hsl=$((hsl+1))
+    done <<< $( btrfs subvolume list / )
 
     #oldest home snapshot
-    ohs="$(btrfs subvolume list / | awk '/snapshot/ && /@home/ {print $NF}' | head -n1)"
+    while IFS= read -r Line; do
+	    LastColumn=${Line##* }
+	    [ "${LastColumn:0:16}" = '@snapshots/@home' ] && [ "${LastColumn:16:7}" != '-pacman' ] && ohs="$LastColumn" && break
+    done <<< $( btrfs subvolume list / )
 
     #Mount home subvolume to /mnt/750GB/.snapshots
     mnt='/mnt/750GB/.snapshots'
@@ -88,7 +108,7 @@ main() {
 
     # Check home subvolume exists...
     if [ -e "$hsv" ]; then
-        printf "${GREEN}Found home subvolume...${ALL_OFF}\n"
+        printf "${GREEN}Found home subvolume... $hsv${ALL_OFF}\n"
     else
         printf "${RED}No home subvolume found... exiting${ALL_OFF}\n"
         exit 1
@@ -96,7 +116,7 @@ main() {
 
     # check snapshot subvolume exists...
     if [ -e "$ssv" ]; then
-        printf "${GREEN}Found snapshot suvolume...${ALL_OFF}\n"
+        printf "${GREEN}Found snapshot suvolume... $ssv${ALL_OFF}\n"
     else
         printf "${RED}No snapshot subvolume found${ALL_OFF}\n"
 
@@ -108,7 +128,7 @@ main() {
 
     #remove a home snapshot if there are more than 5
     if [ "$hsl" -ge "$sn" ]; then
-        printf "${RED}Removing oldest $hsv snapshot... ${ALL_OFF}\n"
+        printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
         btrfs subvolume delete $ohs
     else
         printf "${YELLOW}Not enough $hsv snapshots...${ALL_OFF}\n"
@@ -136,22 +156,42 @@ pacman() {
     fi
 
     #home subvolume device
-    hsvdv="$(df -Th | awk '/btrfs/ && /home/' | cut -d' ' -f 1)"
+    hsvdvl=1
+    while IFS= read -r Line; do
+	    if [ -n "$hsvdvl" ]; then
+		    unset hsvdvl; continue
+	    fi
+	    set -- $Line
+	    [ "$2" = 'btrfs' ] && [ "${7}" = '/home' ] && hsvdv="$1"
+    done <<< $( df -Th )
 
     #current date
     cdt=`date +"%F-%H-%M-%S"`
 
     #home subvolume
-    hsv="$(btrfs subvolume list / | awk '/level 5/ && /@home$/ {print $NF}')"
+    while IFS= read -r Line; do
+	    set -- $Line
+	    [ "$7" = '5' ] && [ "$9" = '@home' ] && hsv="${@: -1}"
+    done <<< $( btrfs subvolume list / )
 
     #snapshot subvolume
-    ssv="$(btrfs subvolume list / | awk '/level 5/ && /snapshot/ {print $NF}')"
+    while IFS= read -r Line; do
+	    set -- $Line
+	    [ "$7" = '5' ] && [ "$9" = '@snapshots' ] && ssv="${@: -1}"
+    done <<< $( btrfs subvolume list / )
 
     #number of home snapshots
-    hsl="$(btrfs subvolume list / | awk '/snapshot/ && /@home/ && /pacman/' | wc -l)"
+    hsl=0
+    while IFS= read -r Line; do
+	    LastColumn=${Line##* }
+	    [ "${LastColumn:0:23}" = '@snapshots/@home-pacman' ] && hsl=$((hsl+1))
+    done <<< $( btrfs subvolume list / )
 
     #oldest home snapshot
-    ohs="$(btrfs subvolume list / | awk '/snapshot/ && /@home/ && /pacman/ {print $NF}' | head -n1)"
+    while IFS= read -r Line; do
+	    LastColumn=${Line##* }
+	    [ "${LastColumn:0:23}" = '@snapshots/@home-pacman' ] && ohs="$LastColumn" && break
+    done <<< $( btrfs subvolume list / )
 
     #Mount home subvolume to /mnt/750GB/.snapshots
     mnt='/mnt/750GB/.snapshots'
@@ -174,7 +214,7 @@ pacman() {
 
     # Check home subvolume exists...
     if [ -e "$hsv" ]; then
-        printf "${GREEN}Found home subvolume...${ALL_OFF}\n"
+        printf "${GREEN}Found home subvolume... $hsv${ALL_OFF}\n"
     else
         printf "${RED}No home subvolume found... exiting${ALL_OFF}\n"
         exit 1
@@ -182,7 +222,7 @@ pacman() {
 
     # check snapshot subvolume exists...
     if [ -e "$ssv" ]; then
-        printf "${GREEN}Found snapshot suvolume...${ALL_OFF}\n"
+        printf "${GREEN}Found snapshot suvolume... $ssv${ALL_OFF}\n"
     else
         printf "${RED}No snapshot subvolume found${ALL_OFF}\n"
 
@@ -194,7 +234,7 @@ pacman() {
 
     #remove a home snapshot if there are more than 5
     if [ "$hsl" -ge "$sn" ]; then
-        printf "${RED}Removing oldest $hsv snapshot... ${ALL_OFF}\n"
+        printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
         btrfs subvolume delete $ohs
     else
         printf "${YELLOW}Not enough $hsv snapshots...${ALL_OFF}\n"
