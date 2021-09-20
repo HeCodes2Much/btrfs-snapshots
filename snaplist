@@ -16,6 +16,23 @@ CYAN="\e[1:36m"
 
 readonly ALL_OFF RED GREEN YELLOW BLUE PURPLE CYAN
 
+#=== FUNCTION =================================================================
+#        Name: error
+# Description: Print message with a red pretag an ERROR
+# Parameter 1: Message to print
+#==============================================================================
+
+# copied from makepkg
+error() {
+    local mesg=$1; shift
+    printf "${RED}==> ERROR:${ALL_OFF}${BOLD} %s${ALL_OFF}\n" "$mesg" "$@" >&2
+}
+
+#=== FUNCTION =================================================================
+#        Name: main
+# Description: The main function if nothing is passed
+#==============================================================================
+
 main(){
     runas=$(whoami)
 
@@ -85,6 +102,75 @@ main(){
 }
 
 #=== FUNCTION =================================================================
+#        Name: menu
+# Description: The menu function for repomenu
+#==============================================================================
+
+menu(){
+    runas=$(whoami)
+
+    if [ $runas != 'root' ]; then
+        printf ${GREEN}"%s ${RED}command must be ran as root\n" "$SCRIPTNAME"
+        exit
+    fi
+
+    IndexOf() {
+        x="${1%%$2*}"
+        [ "$x" = "$1" ] || printf '%d' "${#x}"
+    }
+
+    declare -A PathCounts
+    declare -A Paths
+    NL='\n'
+
+    while IFS= read -r Line; do
+
+        set -- $Line
+
+        # Path is after the first "path "
+        Path=$9
+
+        # Get the index of the first /
+        PathL2Index=$( IndexOf "$Path" '/' )
+
+        # Ignore paths that don't have a 2nd level
+        [ -z "$PathL2Index" ] && continue
+
+        Id=$2
+
+        # Path is after the first / in Path
+        PathL2=${Path:$(( PathL2Index + 1 ))}
+
+        # Remove the 10 char date from the end to isolate the name
+        NameL2=${PathL2%????????????????????}
+
+        # Remove the 1st character "@"
+        NameL2=${NameL2:1}
+
+        # If -pacman exists in the NameL2, it's category is pacman
+        if [ "${NameL2##*-pacman}" = "$1" ]; then
+            Category='pacman'
+        else
+            Category=$NameL2
+        fi
+
+        # Add NameL2 to appropriate category
+        Paths["$Category"]="${Paths["$Category"]}ID=$Id $Path$NL"
+
+        # Increment count in appropriate category
+        (( PathCounts["$Category"]++ ))
+
+    done <<< $(btrfs subvolume list /)
+
+    FirstRun=1
+    for Key in "${!Paths[@]}"; do
+        [ -n "$FirstRun" ] || printf ''
+        printf "${Paths[$Key]}";
+        FirstRun=
+    done
+}
+
+#=== FUNCTION =================================================================
 #        Name: version
 # Description: Prints version information
 #==============================================================================
@@ -108,14 +194,15 @@ version() {
 usage() {
 
     printf "
-    Snapshot the @ and @home btrfs subvolumes.
+    Snapshot the @ and @root btrfs subvolumes.
     Usage:
-    %s...
-    %s [options]...
+      %s...
+      %s [options]...
     Options:
-    -h, --help            Display help.
-    -v, --version         Print version information and exits.
-    \n" "$SCRIPTNAME" "$SCRIPTNAME"
+      -h, --help            Display help.
+      -v, --version         Print version information and exits.
+      -m, --menu            Exec this scripts repomenu.
+      \n" "$SCRIPTNAME" "$SCRIPTNAME"
 }
 
 while true; do
@@ -126,6 +213,10 @@ while true; do
             ;;
         -v|--version)
             version
+            exit 0
+            ;;
+        -m|--menu)
+            menu
             exit 0
             ;;
         --)
