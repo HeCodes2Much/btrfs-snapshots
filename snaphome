@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-SNAP_HOME=$(gsettings get org.therepoclub.repomenu.snapshots.preferences home | sed s/\'//g)
-SNAP_PACMAN=$(gsettings get org.therepoclub.repomenu.snapshots.preferences pacman | sed s/\'//g)
+SNAP_HOME=$(gsettings get org.therepoclub.btrfs-snapshots.preferences home | sed s/\'//g)
+SNAP_PACMAN=$(gsettings get org.therepoclub.btrfs-snapshots.preferences pacman | sed s/\'//g)
 
 ## Script metadata
 SCRIPTNAME=${0##*/}

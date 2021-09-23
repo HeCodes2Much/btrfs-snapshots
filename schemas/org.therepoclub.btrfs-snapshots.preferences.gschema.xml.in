@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-  <schema path="/org/therepoclub/repomenu/snapshots/preferences/" id="org.therepoclub.repomenu.snapshots.preferences">
+  <schema path="/org/therepoclub/btrfs-snapshots/preferences/" id="org.therepoclub.btrfs-snapshots.preferences">
     <key type="s" name="pacman">
       <default>'5'</default>
       <summary>Number of pacman snapshots to save</summary>

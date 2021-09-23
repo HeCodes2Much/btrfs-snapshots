@@ -1,5 +1,5 @@
 schemas = [
-  'org.therepoclub.repomenu.snapshots.preferences.gschema.xml',
+  'org.therepoclub.btrfs-snapshots.preferences.gschema.xml',
 ]
 
 conf = configuration_data()
@@ -24,6 +24,6 @@ endforeach
 install_data(generated_schemas, install_dir: schemasdir)
 
 install_data(
-  'repomenu-snapshots-schemas.convert',
+  'btrfs-snapshots-schemas.convert',
   install_dir: join_paths(datadir, 'GConf', 'gsettings'),
 )

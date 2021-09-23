@@ -1,0 +1,5 @@
+# From org.therepoclub.btrfs-snapshots.preferences
+[org.therepoclub.btrfs-snapshots.preferences]
+pacman = 10
+root = 10
+home = 10

@@ -1,5 +1,5 @@
 project(
-  'repomenu-schemas', 'c',
+  'btrfs-snapshots', 'c',
   version: '3.38.0',
   default_options: [
     'warning_level=2'
@@ -36,10 +36,10 @@ conf.set('VERSION', meson.project_version())
 conf.set('includedir', includedir)
 
 pkg = configure_file(configuration: conf,
-                     input: 'repomenu-snapshots-schemas.pc.in',
+                     input: 'btrfs-snapshots-schemas.pc.in',
                      install: true,
                      install_dir: join_paths(datadir, 'pkgconfig'),
-                     output: 'repomenu-schemas.pc')
+                     output: 'btrfs-snapshots-schemas.pc')
 
 glib_mkenums = find_program('glib-mkenums')
 
