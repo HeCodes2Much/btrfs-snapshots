@@ -4,8 +4,6 @@
 include config.mk
 
 install: all
-	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	cp -f repomenue_snapshots $(DESTDIR)$(PREFIX)/bin
 	mkdir -p $(DESTDIR)$(LOCALPREFIX)/bin
 	cp -f snap* $(DESTDIR)$(LOCALPREFIX)/bin
 	mkdir -p $(DESTDIR)$(SYSTEMD)/system
@@ -15,7 +13,6 @@ install: all
 
 
 uninstall:
-	rm -rf $(DESTDIR)$(PREFIX)/bin/repomenue_snapshots
 	rm -rf $(DESTDIR)$(LOCALPREFIX)/bin/snap*
 	rm -rf $(DESTDIR)$(SYSTEMD)/system/auto-snapshot*
 	rm -rf $(DESTDIR)$(PACMAND)/hooks/*make_snapshot*
