@@ -12,7 +12,7 @@
 #Created:
 #   Sun 17 July 2022, 11:03:52 PM [GMT+1]
 #Last edited:
-#   Sun 17 July 2022, 11:14:55 PM [GMT+1]
+#   Sun 17 July 2022, 11:34:08 PM [GMT+1]
 #
 #Description:
 #   <Todo>
@@ -20,6 +20,7 @@
 #Dependencies:
 #   <None>
 #
+# shellcheck disable=all
 
 set -e
 
