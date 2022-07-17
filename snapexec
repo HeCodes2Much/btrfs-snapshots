@@ -12,7 +12,7 @@
 #Created:
 #   Sun 17 July 2022, 11:04:20 PM [GMT+1]
 #Last edited:
-#   Sun 17 July 2022, 11:36:40 PM [GMT+1]
+#   Sun 17 July 2022, 11:37:39 PM [GMT+1]
 #
 #Description:
 #   <Todo>
@@ -39,6 +39,6 @@ case $1 in
   btrfsGetFunction "$1"
   ;;
 *)
-  echo "repo-exec version: 2022.07.17" && exit 1
+  echo "snapexec version: 2022.07.17" && exit 1
   ;;
 esac
