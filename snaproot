@@ -1,8 +1,30 @@
 #!/usr/bin/env bash
+#-*-coding:utf-8 -*-
+#Auto updated?
+#   Yes
+#File :
+#   snaproot
+#Author :
+#   The-Repo-Club [wayne6324@gmail.com]
+#Github :
+#   https://github.com/The-Repo-Club/
+#
+#Created:
+#   Sun 17 July 2022, 11:03:52 PM [GMT+1]
+#Last edited:
+#   Sun 17 July 2022, 11:14:55 PM [GMT+1]
+#
+#Description:
+#   <Todo>
+#
+#Dependencies:
+#   <None>
+#
+
 set -e
 
-SNAP_ROOT=$(gsettings get org.therepoclub.btrfs-snapshots.preferences root | sed s/\'//g)
-SNAP_PACMAN=$(gsettings get org.therepoclub.btrfs-snapshots.preferences pacman | sed s/\'//g)
+SNAP_ROOT=$(snapexec root | sed s/\'//g)
+SNAP_PACMAN=$(snapexec pacman | sed s/\'//g)
 
 ## Script metadata
 SCRIPTNAME=${0##*/}
@@ -29,8 +51,9 @@ readonly ALL_OFF RED GREEN YELLOW BLUE PURPLE CYAN
 
 # copied from makepkg
 error() {
-    local mesg=$1; shift
-    printf "${RED}==> ERROR:${ALL_OFF}${BOLD} %s${ALL_OFF}\n" "$mesg" "$@" >&2
+  local mesg=$1
+  shift
+  printf "${RED}==> ERROR:${ALL_OFF}${BOLD} %s${ALL_OFF}\n" "$mesg" "$@" >&2
 }
 
 #=== FUNCTION =================================================================
@@ -39,103 +62,105 @@ error() {
 #==============================================================================
 
 main() {
-    #number of snapshots allowed
-    sn=$SNAP_ROOT
+  #number of snapshots allowed
+  sn=$SNAP_ROOT
 
-    runas=$(whoami)
+  runas=$(whoami)
 
-    if [ $runas != 'root' ]; then
-        printf ${GREEN}"%s ${RED}command must be ran as root\n" "$SCRIPTNAME"
-        exit
+  if [ $runas != 'root' ]; then
+    printf ${GREEN}"%s ${RED}command must be ran as root\n" "$SCRIPTNAME"
+    exit
+  fi
+
+  #root subvolume device
+  hsvdvl=1
+  while IFS= read -r Line; do
+    if [ -n "$hsvdvl" ]; then
+      unset hsvdvl
+      continue
     fi
+    set -- $Line
+    [ "$2" = 'btrfs' ] && [ "${7}" = '/' ] && hsvdv="$1"
+  done <<<$(df -Th)
 
-    #root subvolume device
-    hsvdvl=1
-    while IFS= read -r Line; do
-	    if [ -n "$hsvdvl" ]; then
-		    unset hsvdvl; continue
-	    fi
-	    set -- $Line
-	    [ "$2" = 'btrfs' ] && [ "${7}" = '/' ] && hsvdv="$1"
-    done <<< $( df -Th )
+  #current date
+  cdt=$(date +"%F-%H-%M-%S")
 
-    #current date
-    cdt=`date +"%F-%H-%M-%S"`
+  #root subvolume
+  while IFS= read -r Line; do
+    set -- $Line
+    [ "$7" = '5' ] && [ "$9" = '@' ] && hsv="${@: -1}"
+  done <<<$(btrfs subvolume list /)
 
-    #root subvolume
-    while IFS= read -r Line; do
-	    set -- $Line
-	    [ "$7" = '5' ] && [ "$9" = '@' ] && hsv="${@: -1}"
-    done <<< $( btrfs subvolume list / )
+  #snapshot subvolume
+  while IFS= read -r Line; do
+    set -- $Line
+    [ "$7" = '5' ] && [ "$9" = '@snapshots' ] && ssv="${@: -1}"
+  done <<<$(btrfs subvolume list /)
 
-    #snapshot subvolume
-    while IFS= read -r Line; do
-	    set -- $Line
-	    [ "$7" = '5' ] && [ "$9" = '@snapshots' ] && ssv="${@: -1}"
-    done <<< $( btrfs subvolume list / )
+  #number of root snapshots
+  hsl=0
+  while IFS= read -r Line; do
+    LastColumn=${Line##* }
+    [ "${LastColumn:0:16}" = '@snapshots/@root' ] && [ "${LastColumn:16:7}" != '-pacman' ] && hsl=$((hsl + 1))
+  done <<<$(btrfs subvolume list /)
 
-    #number of root snapshots
-    hsl=0
-    while IFS= read -r Line; do
-	    LastColumn=${Line##* }
-	    [ "${LastColumn:0:16}" = '@snapshots/@root' ] && [ "${LastColumn:16:7}" != '-pacman' ] && hsl=$((hsl+1))
-    done <<< $( btrfs subvolume list / )
+  #oldest root snapshot
+  while IFS= read -r Line; do
+    LastColumn=${Line##* }
+    [ "${LastColumn:0:16}" = '@snapshots/@root' ] && [ "${LastColumn:16:7}" != '-pacman' ] && ohs="$LastColumn" && break
+  done <<<$(btrfs subvolume list /)
 
-    #oldest root snapshot
-    while IFS= read -r Line; do
-	    LastColumn=${Line##* }
-	    [ "${LastColumn:0:16}" = '@snapshots/@root' ] && [ "${LastColumn:16:7}" != '-pacman' ] && ohs="$LastColumn" && break
-    done <<< $( btrfs subvolume list / )
+  #Mount root subvolume to /mnt/750GB/.snapshots
+  mnt='/mnt/750GB/.snapshots'
 
-    #Mount root subvolume to /mnt/750GB/.snapshots
-    mnt='/mnt/750GB/.snapshots'
-
-    if [ -e "$hsvdv" ]; then
-        if [ -d "$mnt" ]; then
-            printf "${YELLOW}Mounted $hsvdv to $mnt${ALL_OFF}\n"
-        else
-            printf "${RED}No btrfs drives found${ALL_OFF}\n"
-            exit 1
-        fi
+  if [ -e "$hsvdv" ]; then
+    if [ -d "$mnt" ]; then
+      printf "${YELLOW}Mounted $hsvdv to $mnt${ALL_OFF}\n"
     else
-        printf "${RED}No btrfs drives found${ALL_OFF}\n"
-        exit 1
+      printf "${RED}No btrfs drives found${ALL_OFF}\n"
+      exit 1
     fi
+  else
+    printf "${RED}No btrfs drives found${ALL_OFF}\n"
+    exit 1
+  fi
 
-    #MUST be in /mnt to perform task
-    cd $mnt
+  #MUST be in /mnt to perform task
+  cd $mnt
 
-    # Check root subvolume exists...
-    if [ -e "$hsv" ]; then
-        printf "${GREEN}Found root subvolume... $hsv${ALL_OFF}\n"
-    else
-        printf "${RED}No root subvolume found... exiting${ALL_OFF}\n"
-        exit 1
-    fi
+  # Check root subvolume exists...
+  if [ -e "$hsv" ]; then
+    printf "${GREEN}Found root subvolume... $hsv${ALL_OFF}\n"
+  else
+    printf "${RED}No root subvolume found... exiting${ALL_OFF}\n"
+    exit 1
+  fi
 
-    # check snapshot subvolume exists...
-    if [ -e "$ssv" ]; then
-        printf "${GREEN}Found snapshot suvolume... $ssv${ALL_OFF}\n"
-    else
-        printf "${RED}No snapshot subvolume found${ALL_OFF}\n"
+  # check snapshot subvolume exists...
+  if [ -e "$ssv" ]; then
+    printf "${GREEN}Found snapshot suvolume... $ssv${ALL_OFF}\n"
+  else
+    printf "${RED}No snapshot subvolume found${ALL_OFF}\n"
 
-        exit 1
-    fi
+    exit 1
+  fi
 
-    #Make snapshot and place in snapshot directory
-    btrfs subvolume snapshot $hsv $ssv/@root-$cdt
+  #Make snapshot and place in snapshot directory
+  btrfs subvolume snapshot $hsv $ssv/@root-$cdt
 
-    #remove a root snapshot if there are more than 5
-    if [ "$hsl" -ge "$sn" ]; then
-        printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
-        btrfs subvolume delete $ohs
-    else
-        printf "${YELLOW}Not enough $hsv snapshots...${ALL_OFF}\n"
-        printf "${YELLOW}No snapshots to delete...${ALL_OFF}\n"
-    fi
+  #remove a root snapshot if there are more than 5
+  if [ "$hsl" -ge "$sn" ]; then
+    printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
+    btrfs subvolume delete $ohs
+  else
+    printf "${YELLOW}Not enough $hsv snapshots...${ALL_OFF}\n"
+    printf "${YELLOW}No snapshots to delete...${ALL_OFF}\n"
+  fi
 
-    printf "\n"
-    read -rsn1 -p "Press any key to continue";printf "\n"
+  printf "\n"
+  read -rsn1 -p "Press any key to continue"
+  printf "\n"
 }
 
 #=== FUNCTION =================================================================
@@ -144,104 +169,105 @@ main() {
 #==============================================================================
 
 pacman() {
-    #number of snapshots allowed
-    sn=$SNAP_PACMAN
+  #number of snapshots allowed
+  sn=$SNAP_PACMAN
 
-    runas=$(whoami)
+  runas=$(whoami)
 
-    if [ $runas != 'root' ]; then
-        printf ${GREEN}"%s ${RED}command must be ran as root\n" "$SCRIPTNAME"
-        exit
+  if [ $runas != 'root' ]; then
+    printf ${GREEN}"%s ${RED}command must be ran as root\n" "$SCRIPTNAME"
+    exit
+  fi
+
+  #root subvolume device
+  hsvdvl=1
+  while IFS= read -r Line; do
+    if [ -n "$hsvdvl" ]; then
+      unset hsvdvl
+      continue
     fi
+    set -- $Line
+    [ "$2" = 'btrfs' ] && [ "${7}" = '/' ] && hsvdv="$1"
+  done <<<$(df -Th)
 
-    #root subvolume device
-    hsvdvl=1
-    while IFS= read -r Line; do
-	    if [ -n "$hsvdvl" ]; then
-		    unset hsvdvl; continue
-	    fi
-	    set -- $Line
-	    [ "$2" = 'btrfs' ] && [ "${7}" = '/' ] && hsvdv="$1"
-    done <<< $( df -Th )
+  #current date
+  cdt=$(date +"%F-%H-%M-%S")
 
-    #current date
-    cdt=`date +"%F-%H-%M-%S"`
+  #root subvolume
+  while IFS= read -r Line; do
+    set -- $Line
+    [ "$7" = '5' ] && [ "$9" = '@' ] && hsv="${@: -1}"
+  done <<<$(btrfs subvolume list /)
 
-    #root subvolume
-    while IFS= read -r Line; do
-	    set -- $Line
-	    [ "$7" = '5' ] && [ "$9" = '@' ] && hsv="${@: -1}"
-    done <<< $( btrfs subvolume list / )
+  #snapshot subvolume
+  while IFS= read -r Line; do
+    set -- $Line
+    [ "$7" = '5' ] && [ "$9" = '@snapshots' ] && ssv="${@: -1}"
+  done <<<$(btrfs subvolume list /)
 
-    #snapshot subvolume
-    while IFS= read -r Line; do
-	    set -- $Line
-	    [ "$7" = '5' ] && [ "$9" = '@snapshots' ] && ssv="${@: -1}"
-    done <<< $( btrfs subvolume list / )
+  #number of root snapshots
+  hsl=0
+  while IFS= read -r Line; do
+    LastColumn=${Line##* }
+    [ "${LastColumn:0:23}" = '@snapshots/@root-pacman' ] && hsl=$((hsl + 1))
+  done <<<$(btrfs subvolume list /)
 
-    #number of root snapshots
-    hsl=0
-    while IFS= read -r Line; do
-	    LastColumn=${Line##* }
-	    [ "${LastColumn:0:23}" = '@snapshots/@root-pacman' ] && hsl=$((hsl+1))
-    done <<< $( btrfs subvolume list / )
+  #oldest root snapshot
+  while IFS= read -r Line; do
+    LastColumn=${Line##* }
+    [ "${LastColumn:0:23}" = '@snapshots/@root-pacman' ] && ohs="$LastColumn" && break
+  done <<<$(btrfs subvolume list /)
 
-    #oldest root snapshot
-    while IFS= read -r Line; do
-	    LastColumn=${Line##* }
-	    [ "${LastColumn:0:23}" = '@snapshots/@root-pacman' ] && ohs="$LastColumn" && break
-    done <<< $( btrfs subvolume list / )
+  #Mount root subvolume to /mnt/750GB/.snapshots
+  mnt='/mnt/750GB/.snapshots'
 
-    #Mount root subvolume to /mnt/750GB/.snapshots
-    mnt='/mnt/750GB/.snapshots'
-
-    if [ -e "$hsvdv" ]; then
-        if [ -d "$mnt" ]; then
-            printf "${YELLOW}Mounted $hsvdv to $mnt${ALL_OFF}\n"
-        else
-            printf "${RED}No btrfs drives found${ALL_OFF}\n"
-            exit 1
-        fi
+  if [ -e "$hsvdv" ]; then
+    if [ -d "$mnt" ]; then
+      printf "${YELLOW}Mounted $hsvdv to $mnt${ALL_OFF}\n"
     else
-        printf "${RED}No btrfs drives found${ALL_OFF}\n"
-        exit 1
+      printf "${RED}No btrfs drives found${ALL_OFF}\n"
+      exit 1
     fi
+  else
+    printf "${RED}No btrfs drives found${ALL_OFF}\n"
+    exit 1
+  fi
 
-    #MUST be in /mnt to perform task
-    cd $mnt
+  #MUST be in /mnt to perform task
+  cd $mnt
 
+  # Check root subvolume exists...
+  if [ -e "$hsv" ]; then
+    printf "${GREEN}Found root subvolume... $hsv${ALL_OFF}\n"
+  else
+    printf "${RED}No root subvolume found... exiting${ALL_OFF}\n"
+    exit 1
+  fi
 
-    # Check root subvolume exists...
-    if [ -e "$hsv" ]; then
-        printf "${GREEN}Found root subvolume... $hsv${ALL_OFF}\n"
-    else
-        printf "${RED}No root subvolume found... exiting${ALL_OFF}\n"
-        exit 1
-    fi
+  # check snapshot subvolume exists...
+  if [ -e "$ssv" ]; then
+    printf "${GREEN}Found snapshot suvolume... $ssv${ALL_OFF}\n"
+  else
+    printf "${RED}No snapshot subvolume found${ALL_OFF}\n"
 
-    # check snapshot subvolume exists...
-    if [ -e "$ssv" ]; then
-        printf "${GREEN}Found snapshot suvolume... $ssv${ALL_OFF}\n"
-    else
-        printf "${RED}No snapshot subvolume found${ALL_OFF}\n"
+    exit 1
+  fi
 
-        exit 1
-    fi
+  #Make snapshot and place in snapshot directory
+  btrfs subvolume snapshot $hsv $ssv/@root-pacman-$cdt
 
-    #Make snapshot and place in snapshot directory
-    btrfs subvolume snapshot $hsv $ssv/@root-pacman-$cdt
+  #remove a root snapshot if there are more than 5
+  if [ "$hsl" -ge "$sn" ]; then
+    printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
+    btrfs subvolume delete $ohs
+  else
+    printf "${YELLOW}Not enough $hsv snapshots...${ALL_OFF}\n"
+    printf "${YELLOW}No snapshots to delete...${ALL_OFF}\n"
+  fi
 
-    #remove a root snapshot if there are more than 5
-    if [ "$hsl" -ge "$sn" ]; then
-        printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
-        btrfs subvolume delete $ohs
-    else
-        printf "${YELLOW}Not enough $hsv snapshots...${ALL_OFF}\n"
-        printf "${YELLOW}No snapshots to delete...${ALL_OFF}\n"
-    fi
-
-    printf "\n"
-    read -rsn1 -p "Press any key to continue";printf "\n"
+  printf "\n"
+  read -rsn1 -p "Press any key to continue"
+  printf "\n"
 }
 
 #=== FUNCTION =================================================================
@@ -250,14 +276,14 @@ pacman() {
 #==============================================================================
 
 version() {
-    printf "
+  printf "
         %s v%s - %s
 
         This program may be freely redistributed under
         the terms of the GNU General Public License v3.0.
         %s
     \n" "$SCRIPTNAME" "$VERSION" "$DESCRIPTION" "$AUTHOR"
-    exit
+  exit
 }
 
 #=== FUNCTION =================================================================
@@ -267,7 +293,7 @@ version() {
 
 usage() {
 
-    printf "
+  printf "
     Snapshot the @ and @root btrfs subvolumes.
     Usage:
       %s...
@@ -280,31 +306,31 @@ usage() {
 }
 
 while true; do
-    case $1 in
-        -h|--help|-\?)
-            usage
-            exit 0
-            ;;
-        -v|--version)
-            version
-            exit 0
-            ;;
-        -p|--pacman)
-            pacman
-            exit 0
-            ;;
-        --)
-            shift
-            break
-            ;;
-        -*)
-            error "Unknown option: $1"
-            usage
-            exit 1
-            ;;
-        *)
-            main
-            break
-            ;;
-    esac
+  case $1 in
+  -h | --help | -\?)
+    usage
+    exit 0
+    ;;
+  -v | --version)
+    version
+    exit 0
+    ;;
+  -p | --pacman)
+    pacman
+    exit 0
+    ;;
+  --)
+    shift
+    break
+    ;;
+  -*)
+    error "Unknown option: $1"
+    usage
+    exit 1
+    ;;
+  *)
+    main
+    break
+    ;;
+  esac
 done

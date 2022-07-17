@@ -1,4 +1,26 @@
 #!/usr/bin/env bash
+#-*-coding:utf-8 -*-
+#Auto updated?
+#   Yes
+#File :
+#   snapshot
+#Author :
+#   The-Repo-Club [wayne6324@gmail.com]
+#Github :
+#   https://github.com/The-Repo-Club/
+#
+#Created:
+#   Sun 17 July 2022, 11:04:01 PM [GMT+1]
+#Last edited:
+#   Sun 17 July 2022, 11:04:06 PM [GMT+1]
+#
+#Description:
+#   <Todo>
+#
+#Dependencies:
+#   <None>
+#
+
 ## Script metadata
 SCRIPTNAME=${0##*/}
 VERSION="2021.09.19"
@@ -24,8 +46,9 @@ readonly ALL_OFF RED GREEN YELLOW BLUE PURPLE CYAN
 
 # copied from makepkg
 error() {
-    local mesg=$1; shift
-    printf "${RED}==> ERROR:${ALL_OFF}${BOLD} %s${ALL_OFF}\n" "$mesg" "$@" >&2
+  local mesg=$1
+  shift
+  printf "${RED}==> ERROR:${ALL_OFF}${BOLD} %s${ALL_OFF}\n" "$mesg" "$@" >&2
 }
 
 #=== FUNCTION =================================================================
@@ -34,40 +57,40 @@ error() {
 #==============================================================================
 
 main() {
-    runas=$(whoami)
+  runas=$(whoami)
 
-    if [ $runas != 'root' ]; then
-        printf ${GREEN}"%s ${RED}command must be ran as root${ALL_OFF}\n" "$SCRIPTNAME"
-        exit
-    fi
+  if [ $runas != 'root' ]; then
+    printf ${GREEN}"%s ${RED}command must be ran as root${ALL_OFF}\n" "$SCRIPTNAME"
+    exit
+  fi
 
+  if ! command -v snaphome &>/dev/null; then
+    printf ${RED}"snaphome could not be found${ALL_OFF}\n"
+    exit
+  else
+    printf ${GREEN}"running snaphome.${ALL_OFF}\n"
+    snaphome
+  fi
 
-    if ! command -v snaphome &> /dev/null; then
-        printf ${RED}"snaphome could not be found${ALL_OFF}\n"
-        exit
-    else
-        printf ${GREEN}"running snaphome.${ALL_OFF}\n"
-        snaphome
-    fi
+  if ! command -v snaproot &>/dev/null; then
+    printf ${RED}"snaproot could not be found${ALL_OFF}\n"
+    exit
+  else
+    printf ${GREEN}"running snaproot.${ALL_OFF}\n"
+    snaproot
+  fi
 
-    if ! command -v snaproot &> /dev/null; then
-        printf ${RED}"snaproot could not be found${ALL_OFF}\n"
-        exit
-    else
-        printf ${GREEN}"running snaproot.${ALL_OFF}\n"
-        snaproot
-    fi
+  if ! command -v grub-mkconfig &>/dev/null; then
+    printf ${RED}"grub-mkconfig could not be found${ALL_OFF}\n"
+    exit
+  else
+    printf ${GREEN}"running grub-mkconfig.${ALL_OFF}\n"
+    grub-mkconfig -o /boot/grub/grub.cfg
+  fi
 
-    if ! command -v grub-mkconfig &> /dev/null; then
-        printf ${RED}"grub-mkconfig could not be found${ALL_OFF}\n"
-        exit
-    else
-        printf ${GREEN}"running grub-mkconfig.${ALL_OFF}\n"
-        grub-mkconfig -o /boot/grub/grub.cfg
-    fi
-
-    printf "\n"
-    read -rsn1 -p "Press any key to continue";printf "\n"
+  printf "\n"
+  read -rsn1 -p "Press any key to continue"
+  printf "\n"
 }
 
 #=== FUNCTION =================================================================
@@ -76,32 +99,32 @@ main() {
 #==============================================================================
 
 home_only() {
-    runas=$(whoami)
+  runas=$(whoami)
 
-    if [ $runas != 'root' ]; then
-        printf ${GREEN}"%s ${RED}command must be ran as root${ALL_OFF}\n" "$SCRIPTNAME"
-        exit
-    fi
+  if [ $runas != 'root' ]; then
+    printf ${GREEN}"%s ${RED}command must be ran as root${ALL_OFF}\n" "$SCRIPTNAME"
+    exit
+  fi
 
+  if ! command -v snaphome &>/dev/null; then
+    printf ${RED}"snaphome could not be found${ALL_OFF}\n"
+    exit
+  else
+    printf ${GREEN}"running snaphome.${ALL_OFF}\n"
+    snaphome
+  fi
 
-    if ! command -v snaphome &> /dev/null; then
-        printf ${RED}"snaphome could not be found${ALL_OFF}\n"
-        exit
-    else
-        printf ${GREEN}"running snaphome.${ALL_OFF}\n"
-        snaphome
-    fi
+  if ! command -v grub-mkconfig &>/dev/null; then
+    printf ${RED}"grub-mkconfig could not be found${ALL_OFF}\n"
+    exit
+  else
+    printf ${GREEN}"running grub-mkconfig.${ALL_OFF}\n"
+    grub-mkconfig -o /boot/grub/grub.cfg
+  fi
 
-    if ! command -v grub-mkconfig &> /dev/null; then
-        printf ${RED}"grub-mkconfig could not be found${ALL_OFF}\n"
-        exit
-    else
-        printf ${GREEN}"running grub-mkconfig.${ALL_OFF}\n"
-        grub-mkconfig -o /boot/grub/grub.cfg
-    fi
-
-    printf "\n"
-    read -rsn1 -p "Press any key to continue";printf "\n"
+  printf "\n"
+  read -rsn1 -p "Press any key to continue"
+  printf "\n"
 }
 
 #=== FUNCTION =================================================================
@@ -110,32 +133,32 @@ home_only() {
 #==============================================================================
 
 root_only() {
-    runas=$(whoami)
+  runas=$(whoami)
 
-    if [ $runas != 'root' ]; then
-        printf ${GREEN}"%s ${RED}command must be ran as root${ALL_OFF}\n" "$SCRIPTNAME"
-        exit
-    fi
+  if [ $runas != 'root' ]; then
+    printf ${GREEN}"%s ${RED}command must be ran as root${ALL_OFF}\n" "$SCRIPTNAME"
+    exit
+  fi
 
+  if ! command -v snaproot &>/dev/null; then
+    printf ${RED}"snaproot could not be found${ALL_OFF}\n"
+    exit
+  else
+    printf ${GREEN}"running snaproot.${ALL_OFF}\n"
+    snaproot
+  fi
 
-    if ! command -v snaproot &> /dev/null; then
-        printf ${RED}"snaproot could not be found${ALL_OFF}\n"
-        exit
-    else
-        printf ${GREEN}"running snaproot.${ALL_OFF}\n"
-        snaproot
-    fi
+  if ! command -v grub-mkconfig &>/dev/null; then
+    printf ${RED}"grub-mkconfig could not be found${ALL_OFF}\n"
+    exit
+  else
+    printf ${GREEN}"running grub-mkconfig.${ALL_OFF}\n"
+    grub-mkconfig -o /boot/grub/grub.cfg
+  fi
 
-    if ! command -v grub-mkconfig &> /dev/null; then
-        printf ${RED}"grub-mkconfig could not be found${ALL_OFF}\n"
-        exit
-    else
-        printf ${GREEN}"running grub-mkconfig.${ALL_OFF}\n"
-        grub-mkconfig -o /boot/grub/grub.cfg
-    fi
-
-    printf "\n"
-    read -rsn1 -p "Press any key to continue";printf "\n"
+  printf "\n"
+  read -rsn1 -p "Press any key to continue"
+  printf "\n"
 }
 
 #=== FUNCTION =================================================================
@@ -144,40 +167,40 @@ root_only() {
 #==============================================================================
 
 pacman() {
-    runas=$(whoami)
+  runas=$(whoami)
 
-    if [ $runas != 'root' ]; then
-        printf ${GREEN}"%s ${RED}command must be ran as root${ALL_OFF}\n" "$SCRIPTNAME"
-        exit
-    fi
+  if [ $runas != 'root' ]; then
+    printf ${GREEN}"%s ${RED}command must be ran as root${ALL_OFF}\n" "$SCRIPTNAME"
+    exit
+  fi
 
+  if ! command -v snaphome &>/dev/null; then
+    printf ${RED}"snaphome could not be found${ALL_OFF}\n"
+    exit
+  else
+    printf ${GREEN}"running pacman hook snaphome.${ALL_OFF}\n"
+    snaphome --pacman
+  fi
 
-    if ! command -v snaphome &> /dev/null; then
-        printf ${RED}"snaphome could not be found${ALL_OFF}\n"
-        exit
-    else
-        printf ${GREEN}"running pacman hook snaphome.${ALL_OFF}\n"
-        snaphome --pacman
-    fi
+  if ! command -v snaproot &>/dev/null; then
+    printf ${RED}"snaproot could not be found${ALL_OFF}\n"
+    exit
+  else
+    printf ${GREEN}"running pacman hook snaproot.${ALL_OFF}\n"
+    snaproot --pacman
+  fi
 
-    if ! command -v snaproot &> /dev/null; then
-        printf ${RED}"snaproot could not be found${ALL_OFF}\n"
-        exit
-    else
-        printf ${GREEN}"running pacman hook snaproot.${ALL_OFF}\n"
-        snaproot --pacman
-    fi
+  if ! command -v grub-mkconfig &>/dev/null; then
+    printf ${RED}"grub-mkconfig could not be found${ALL_OFF}\n"
+    exit
+  else
+    printf ${GREEN}"running pacman hook grub-mkconfig.${ALL_OFF}\n"
+    grub-mkconfig -o /boot/grub/grub.cfg
+  fi
 
-    if ! command -v grub-mkconfig &> /dev/null; then
-        printf ${RED}"grub-mkconfig could not be found${ALL_OFF}\n"
-        exit
-    else
-        printf ${GREEN}"running pacman hook grub-mkconfig.${ALL_OFF}\n"
-        grub-mkconfig -o /boot/grub/grub.cfg
-    fi
-
-    printf "\n"
-    read -rsn1 -p "Press any key to continue";printf "\n"
+  printf "\n"
+  read -rsn1 -p "Press any key to continue"
+  printf "\n"
 }
 
 #=== FUNCTION =================================================================
@@ -186,14 +209,14 @@ pacman() {
 #==============================================================================
 
 version() {
-    printf "
+  printf "
         %s v%s - %s
 
         This program may be freely redistributed under
         the terms of the GNU General Public License v3.0.
         %s
     \n" "$SCRIPTNAME" "$VERSION" "$DESCRIPTION" "$AUTHOR"
-    exit
+  exit
 }
 
 #=== FUNCTION =================================================================
@@ -203,7 +226,7 @@ version() {
 
 usage() {
 
-    printf "
+  printf "
     Snapshot the @ and @home btrfs subvolumes.
     Usage:
       %s...
@@ -218,39 +241,39 @@ usage() {
 }
 
 while true; do
-    case $1 in
-        -h|--help|-\?)
-            usage
-            exit 0
-            ;;
-        -v|--version)
-            version
-            exit 0
-            ;;
-        -p|--pacman)
-            pacman
-            exit 0
-            ;;
-        --home)
-            home_only
-            exit 0
-            ;;
-        --root)
-            root_only
-            exit 0
-            ;;
-        --)
-            shift
-            break
-            ;;
-        -*)
-            error "Unknown option: $1"
-            usage
-            exit 1
-            ;;
-        *)
-            main
-            break
-            ;;
-    esac
+  case $1 in
+  -h | --help | -\?)
+    usage
+    exit 0
+    ;;
+  -v | --version)
+    version
+    exit 0
+    ;;
+  -p | --pacman)
+    pacman
+    exit 0
+    ;;
+  --home)
+    home_only
+    exit 0
+    ;;
+  --root)
+    root_only
+    exit 0
+    ;;
+  --)
+    shift
+    break
+    ;;
+  -*)
+    error "Unknown option: $1"
+    usage
+    exit 1
+    ;;
+  *)
+    main
+    break
+    ;;
+  esac
 done

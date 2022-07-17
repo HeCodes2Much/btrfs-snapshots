@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+#-*-coding:utf-8 -*-
+#Auto updated?
+#   Yes
+#File :
+#   snapexec
+#Author :
+#   The-Repo-Club [wayne6324@gmail.com]
+#Github :
+#   https://github.com/The-Repo-Club/
+#
+#Created:
+#   Sun 17 July 2022, 11:04:20 PM [GMT+1]
+#Last edited:
+#   Sun 17 July 2022, 11:14:14 PM [GMT+1]
+#
+#Description:
+#   <Todo>
+#
+#Dependencies:
+#   <None>
+#
+
+btrfs_preferences="/opt/btrfs-snapshots/preferences.json"
+
+btrfsGetFunction() {
+  echo $(cat $btrfs_preferences | jq '.'$1 | sed s/\"//g) &
+}
+
+case $1 in
+*root)
+  btrfsGetFunction "$1"
+  ;;
+*home)
+  btrfsGetFunction "$1"
+  ;;
+*pacman)
+  btrfsGetFunction "$1"
+  ;;
+*)
+  echo "repo-exec version: 2022.07.17" && exit 1
+  ;;
+esac
