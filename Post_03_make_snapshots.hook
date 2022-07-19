@@ -7,5 +7,5 @@ Target = *
 
 [Action]
 Description = building snapshots...
-When = PreTransaction
-Exec = /usr/local/bin/snapshot --pacman
+When = PostTransaction
+Exec = /usr/bin/snapshot --pacman

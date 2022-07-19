@@ -12,7 +12,7 @@
 #Created:
 #   Sun 17 July 2022, 11:03:52 PM [GMT+1]
 #Last edited:
-#   Sun 17 July 2022, 11:34:08 PM [GMT+1]
+#   Mon 18 July 2022, 11:02:24 PM [GMT+1]
 #
 #Description:
 #   <Todo>
@@ -115,6 +115,8 @@ main() {
   #Mount root subvolume to /mnt/750GB/.snapshots
   mnt='/mnt/750GB/.snapshots'
 
+  $(mount $hsvdv $mnt)
+
   if [ -e "$hsvdv" ]; then
     if [ -d "$mnt" ]; then
       printf "${YELLOW}Mounted $hsvdv to $mnt${ALL_OFF}\n"
@@ -160,8 +162,8 @@ main() {
   fi
 
   printf "\n"
-  read -rsn1 -p "Press any key to continue"
-  printf "\n"
+  cd ..
+  $(umount $hsvdv)
 }
 
 #=== FUNCTION =================================================================
@@ -222,6 +224,8 @@ pacman() {
   #Mount root subvolume to /mnt/750GB/.snapshots
   mnt='/mnt/750GB/.snapshots'
 
+  $(mount $hsvdv $mnt)
+
   if [ -e "$hsvdv" ]; then
     if [ -d "$mnt" ]; then
       printf "${YELLOW}Mounted $hsvdv to $mnt${ALL_OFF}\n"
@@ -267,8 +271,8 @@ pacman() {
   fi
 
   printf "\n"
-  read -rsn1 -p "Press any key to continue"
-  printf "\n"
+  cd ..
+  $(umount $hsvdv)
 }
 
 #=== FUNCTION =================================================================

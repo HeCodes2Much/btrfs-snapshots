@@ -1,8 +1,8 @@
-# repomenu version
-VERSION = 5.0
+# btrsf version
+VERSION = 2022.07.19
 
 # paths
-LOCALPREFIX = /usr/local
+PREFIX = /usr
 PREFIXOPT = /opt
 SYSTEMD = /usr/lib/systemd
 PACMAND = /etc/pacman.d

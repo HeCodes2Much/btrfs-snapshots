@@ -12,7 +12,7 @@
 #Created:
 #   Sun 17 July 2022, 11:04:20 PM [GMT+1]
 #Last edited:
-#   Sun 17 July 2022, 11:37:39 PM [GMT+1]
+#   Tue 19 July 2022, 05:31:50 PM [GMT+1]
 #
 #Description:
 #   <Todo>
@@ -23,6 +23,10 @@
 # shellcheck disable=all
 
 btrfs_preferences="/opt/btrfs-snapshots/preferences.json"
+
+if [ -f "$XDG_CONFIG_HOME/btrfs-snapshots/preferences.json" ]; then
+  btrfs_preferences="$XDG_CONFIG_HOME/btrfs-snapshots/preferences.json"
+fi
 
 btrfsGetFunction() {
   cat $btrfs_preferences | jq '.'$1 | sed s/\"//g

@@ -2,6 +2,7 @@
 Description=Make a snapshot periodically
 
 [Timer]
+Unit=auto-snapshot.service
 OnStartupSec=30sec
 OnCalendar=daily
 Persistent=true
