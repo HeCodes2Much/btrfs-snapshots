@@ -1,1 +1,1 @@
-# repomenu-snapshots
+# btrfs-snapshots

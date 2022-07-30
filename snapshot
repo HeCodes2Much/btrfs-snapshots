@@ -205,8 +205,8 @@ version() {
   printf "
         %s v%s - %s
 
-        This program may be freely redistributed under
-        the terms of the GNU General Public License v3.0.
+        This program may be freely redistributed
+        under the terms of The MIT License.
         %s
     \n" "$SCRIPTNAME" "$VERSION" "$DESCRIPTION" "$AUTHOR"
   exit
