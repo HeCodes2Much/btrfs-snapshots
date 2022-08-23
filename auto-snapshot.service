@@ -4,7 +4,7 @@ Description=Make a snapshot on boot
 [Service]
 Type=oneshot
 Environment=DISPLAY=:0
-ExecStart=/usr/local/bin/snapshot
+ExecStart=/usr/bin/snapshot
 
 [Install]
 WantedBy=auto-snapshot.timer

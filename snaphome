@@ -12,7 +12,7 @@
 #Created:
 #   Sun 17 July 2022, 11:02:22 PM [GMT+1]
 #Last edited:
-#   Mon 18 July 2022, 11:02:35 PM [GMT+1]
+#   Sun 31 July 2022, 04:53:15 PM [UTC]
 #
 #Description:
 #   <Todo>
@@ -96,24 +96,24 @@ main() {
   #snapshot subvolume
   while IFS= read -r Line; do
     set -- $Line
-    [ "$7" = '5' ] && [ "$9" = '@snapshots' ] && ssv="${@: -1}"
+    [ "$7" = '5' ] && [ "$9" = '@.snapshots' ] && ssv="${@: -1}"
   done <<<$(btrfs subvolume list /)
 
   #number of home snapshots
   hsl=0
   while IFS= read -r Line; do
     LastColumn=${Line##* }
-    [ "${LastColumn:0:16}" = '@snapshots/@home' ] && [ "${LastColumn:16:7}" != '-pacman' ] && hsl=$((hsl + 1))
+    [ "${LastColumn:0:17}" = '@.snapshots/@home' ] && [ "${LastColumn:17:7}" != '-pacman' ] && hsl=$((hsl + 1))
   done <<<$(btrfs subvolume list /)
 
   #oldest home snapshot
   while IFS= read -r Line; do
     LastColumn=${Line##* }
-    [ "${LastColumn:0:16}" = '@snapshots/@home' ] && [ "${LastColumn:16:7}" != '-pacman' ] && ohs="$LastColumn" && break
+    [ "${LastColumn:0:17}" = '@.snapshots/@home' ] && [ "${LastColumn:17:7}" != '-pacman' ] && ohs="$LastColumn" && break
   done <<<$(btrfs subvolume list /)
 
-  #Mount home subvolume to /mnt/750GB/.snapshots
-  mnt='/mnt/750GB/.snapshots'
+  #Mount home subvolume to /mnt/500GB/.snapshots
+  mnt=$(snapexec mnt | sed s/\'//g)
 
   $(mount $hsvdv $mnt)
 
@@ -154,6 +154,7 @@ main() {
 
   #remove a home snapshot if there are more than 5
   if [ "$hsl" -ge "$sn" ]; then
+    printf "${PURPLE}Found $hsl snapshots... $ssv${ALL_OFF}\n"
     printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
     btrfs subvolume delete $ohs
   else
@@ -205,24 +206,24 @@ pacman() {
   #snapshot subvolume
   while IFS= read -r Line; do
     set -- $Line
-    [ "$7" = '5' ] && [ "$9" = '@snapshots' ] && ssv="${@: -1}"
+    [ "$7" = '5' ] && [ "$9" = '@.snapshots' ] && ssv="${@: -1}"
   done <<<$(btrfs subvolume list /)
 
   #number of home snapshots
   hsl=0
   while IFS= read -r Line; do
     LastColumn=${Line##* }
-    [ "${LastColumn:0:23}" = '@snapshots/@home-pacman' ] && hsl=$((hsl + 1))
+    [ "${LastColumn:0:24}" = '@.snapshots/@home-pacman' ] && hsl=$((hsl + 1))
   done <<<$(btrfs subvolume list /)
 
   #oldest home snapshot
   while IFS= read -r Line; do
     LastColumn=${Line##* }
-    [ "${LastColumn:0:23}" = '@snapshots/@home-pacman' ] && ohs="$LastColumn" && break
+    [ "${LastColumn:0:24}" = '@.snapshots/@home-pacman' ] && ohs="$LastColumn" && break
   done <<<$(btrfs subvolume list /)
 
-  #Mount home subvolume to /mnt/750GB/.snapshots
-  mnt='/mnt/750GB/.snapshots'
+  #Mount home subvolume to /mnt/500GB/.snapshots
+  mnt=$(snapexec mnt | sed s/\'//g)
 
   $(mount $hsvdv $mnt)
 
@@ -263,6 +264,7 @@ pacman() {
 
   #remove a home snapshot if there are more than 5
   if [ "$hsl" -ge "$sn" ]; then
+    printf "${PURPLE}Found $hsl snapshots... $ssv${ALL_OFF}\n"
     printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
     btrfs subvolume delete $ohs
   else

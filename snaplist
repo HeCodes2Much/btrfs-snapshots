@@ -12,7 +12,7 @@
 #Created:
 #   Sun 17 July 2022, 11:03:43 PM [GMT+1]
 #Last edited:
-#   Mon 18 July 2022, 10:19:06 PM [GMT+1]
+#   Sun 31 July 2022, 04:46:49 PM [UTC]
 #
 #Description:
 #   <Todo>
@@ -115,10 +115,20 @@ main() {
 
   FirstRun=1
   for Key in "${!Paths[@]}"; do
-    [ -n "$FirstRun" ] || printf '\n'
-    printf "${GREEN}list of %s snapshots: ${YELLOW}%s${ALL_OFF}\n" "$Key" "${PathCounts[$Key]}"
-    printf "${Paths[$Key]}"
-    FirstRun=
+    case $Key in
+      home*)
+        [ -n "$FirstRun" ] || printf '\n'
+        printf "${GREEN}list of %s snapshots: ${YELLOW}%s${ALL_OFF}\n" "$Key" "${PathCounts[$Key]}"
+        printf "${Paths[$Key]}"
+        FirstRun=
+      ;;
+      root*)
+        [ -n "$FirstRun" ] || printf '\n'
+        printf "${GREEN}list of %s snapshots: ${YELLOW}%s${ALL_OFF}\n" "$Key" "${PathCounts[$Key]}"
+        printf "${Paths[$Key]}"
+        FirstRun=
+      ;;
+    esac
   done
 
   printf "\n"
