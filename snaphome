@@ -153,8 +153,8 @@ main() {
   btrfs subvolume snapshot $hsv $ssv/@home-$cdt
 
   #remove a home snapshot if there are more than 5
+  printf "${PURPLE}Found $hsl snapshots...${ALL_OFF}\n"
   if [ "$hsl" -ge "$sn" ]; then
-    printf "${PURPLE}Found $hsl snapshots...${ALL_OFF}\n"
     printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
     btrfs subvolume delete $ohs
   else
@@ -263,8 +263,8 @@ pacman() {
   btrfs subvolume snapshot $hsv $ssv/@home-pacman-$cdt
 
   #remove a home snapshot if there are more than 5
+  printf "${PURPLE}Found $hsl snapshots...${ALL_OFF}\n"
   if [ "$hsl" -ge "$sn" ]; then
-    printf "${PURPLE}Found $hsl snapshots...${ALL_OFF}\n"
     printf "${RED}Removing oldest $hsv snapshot... $ohs${ALL_OFF}\n"
     btrfs subvolume delete $ohs
   else
