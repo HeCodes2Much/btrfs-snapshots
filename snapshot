@@ -25,7 +25,7 @@
 ## Script metadata
 SCRIPTNAME=${0##*/}
 VERSION="2021.09.19"
-DESCRIPTION="A bach BTRFS Sanpshot wrapper"
+DESCRIPTION="A bash BTRFS Sanpshot wrapper"
 AUTHOR="The-Repo-Club <wayne6324@gmail.com>"
 
 ## Set Colors (copied from makepkg)
@@ -34,8 +34,8 @@ RED="\e[1;31m"
 GREEN="\e[1;32m"
 YELLOW="\e[1;33m"
 BLUE="\e[1;34m"
-PURPLE="\e[1:35m"
-CYAN="\e[1:36m"
+PURPLE="\e[1;35m"
+CYAN="\e[1;36m"
 
 readonly ALL_OFF RED GREEN YELLOW BLUE PURPLE CYAN
 

@@ -25,7 +25,7 @@
 ## Script metadata
 SCRIPTNAME=${0##*/}
 VERSION="2021.09.19"
-DESCRIPTION="A bach BTRFS Sanpshot wrapper"
+DESCRIPTION="A bash BTRFS Sanpshot wrapper"
 AUTHOR="The-Repo-Club <wayne6324@gmail.com>"
 
 ## Set Colors (copied from makepkg)
